@@ -1,42 +1,27 @@
-import datetime
 from fabric import Connection
 
-# connect to local root user
-connection = Connection(host='127.0.0.1', user='root', connect_kwargs={'password': ''})
+password = "@Alienware@2024"
 
-# timestamp for backups/logs
-time_mod = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
-
+connection = Connection(
+    host="127.0.0.1",
+    user="abdulkudus",
+    connect_kwargs={"password": password}
+)
 
 def install_mysql():
-    print("Installing MySQL server...")
     connection.run("apt update -y")
-    connection.run("DEBIAN_FRONTEND=noninteractive apt install mysql-server -y")
-    connection.run("systemctl start mysql")
-    print("MySQL installed")
+    connection.run("apt install mysql-server -y")
 
+def create_db():
+    connection.run('mysql -e "CREATE DATABASE IF NOT EXISTS  momo-sms-analytics;"')
 
-def create_database():
-    db_name = "abdul_sql"  # change if you want
-    print(f"Creating database: {db_name}")
-    connection.run(f'mysql -e "CREATE DATABASE IF NOT EXISTS {db_name};"')
-    print(f"Database {db_name} created")
-
-
-def import_sql():
-    remote_path = f"/tmp/dump_{time_mod}.sql"
-    print("Uploading SQL dump...")
-    connection.put("dump.sql", remote_path)
-    db_name = "abdul_sql"
-    print("Importing SQL dump...")
-    connection.run(f"mysql {db_name} < {remote_path}")
-    print("SQL dump imported")
-
+def import_dump():
+    connection.put("dump.sql", "/tmp/dump.sql")
+    connection.run("mysql momo-sms-analytics < /tmp/dump.sql")
 
 def deploy():
     install_mysql()
-    create_database()
-    import_sql()
-
+    create_db()
+    import_dump()
 
 deploy()
