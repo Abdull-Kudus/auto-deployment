@@ -9,15 +9,15 @@ connection = Connection(
 )
 
 def install_mysql():
-    connection.run("apt update -y")
-    connection.run("apt install mysql-server -y")
+    connection.sudo("apt update -y")
+    connection.sudo("apt install mysql-server -y")
 
 def create_db():
-    connection.run('mysql -e "CREATE DATABASE IF NOT EXISTS  momo-sms-analytics;"')
+    connection.sudo('mysql -e "CREATE DATABASE IF NOT EXISTS  momo-sms-analytics;"')
 
 def import_dump():
     connection.put("dump.sql", "/tmp/dump.sql")
-    connection.run("mysql momo-sms-analytics < /tmp/dump.sql")
+    connection.sudo("mysql momo-sms-analytics < /tmp/dump.sql")
 
 def deploy():
     install_mysql()
