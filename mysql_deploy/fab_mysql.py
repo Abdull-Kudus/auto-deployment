@@ -1,6 +1,6 @@
 from fabric import Connection
 
-password = "@Alienware@2024"
+password = "1234567890"
 
 connection = Connection(
     host="127.0.0.1",
