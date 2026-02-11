@@ -1,27 +1,37 @@
-from fabric import Connection
+from fabric import Connection, Config
 
-password = "1234567890"
+# Read the password from the text file securely
+with open('password.txt', 'r') as f:
+    # .strip() removes any accidental spaces or newlines from the file
+    password = f.read().strip()
+
+# Pass the password into Fabric's config so sudo commands execute seamlessly
+sudo_config = Config(overrides={'sudo': {'password': password}})
 
 connection = Connection(
     host="127.0.0.1",
     user="abdulkudus",
-    connect_kwargs={"password": password}
+    connect_kwargs={"password": password},
+    config=sudo_config
 )
 
 def install_mysql():
-    connection.sudo("apt update -y")
-    connection.sudo("apt install mysql-server -y")
+    print("--- Step 1: Installing MySQL Server ---")
+    connection.sudo("apt update -y", hide=True) # hide=True reduces terminal clutter
+    connection.sudo("apt install mysql-server -y", hide=True)
 
-def create_db():
-    connection.sudo('mysql -e "CREATE DATABASE IF NOT EXISTS  momo-sms-analytics;"')
-
-def import_dump():
+def run_dump():
+    print("--- Step 2 & 3: Uploading and Executing SQL Dump ---")
+    # Transfer the dump file to the target machine
     connection.put("dump.sql", "/tmp/dump.sql")
-    connection.sudo("mysql momo-sms-analytics < /tmp/dump.sql")
+    
+    # Run the dump using the commands inside your dump.sql file
+    connection.sudo("mysql < /tmp/dump.sql")
 
 def deploy():
     install_mysql()
-    create_db()
-    import_dump()
+    run_dump()
+    print("--- Deployment Completed Successfully! ---")
 
+# Execute the deployment
 deploy()
